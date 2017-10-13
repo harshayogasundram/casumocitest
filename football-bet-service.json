@@ -1,0 +1,162 @@
+{
+  "scenarioVersion": "1.1",
+  "scenarios": {
+    "sygp9": {
+      "name": "Casumo/Kambi Premier League Match Count",
+      "description": "",
+      "steps": [
+        {
+          "id": "h1t5",
+          "type": "http",
+          "name": "Kambi Count - Premier League  matches",
+          "description": "",
+          "input": {
+            "method": "get",
+            "url": "https://feeds.kambi.com/offering/api/v2/kambi/event/group/1000094985"
+          },
+          "after": {
+            "script": "var count = output.body.get().eventsList.length; \n//console.log(count); \n$.ctx.set('kambi_count',count); \n//console.log($.ctx.get('kambi_count'));"
+          }
+        },
+        {
+          "id": "h1ly",
+          "type": "http",
+          "name": "Casumo Count - Premier League matches",
+          "input": {
+            "method": "get",
+            "url": "http://football-bet-service-594212311.eu-central-1.elb.amazonaws.com/api/leagues/1000094985/matches"
+          },
+          "after": {
+            "script": "var count = output.body.get().length; \n//console.log(count); \ntests['compare Kambi and Casumo counts'] = _.isEqual($.ctx.get('kambi_count'),count);"
+          }
+        }
+      ]
+    },
+    "r1x9s": {
+      "name": "Casumo/Kambi random match check",
+      "steps": [
+        {
+          "id": "hj5s",
+          "type": "http",
+          "name": "Pick random match from Premier League in Kambi",
+          "input": {
+            "method": "get",
+            "url": "https://feeds.kambi.com/offering/api/v2/kambi/event/group/1000094985"
+          },
+          "after": {
+            "script": "var body = output.body.get(); \nvar count = output.body.get().eventsList.length; \n//console.log(count); \nvar rand = Math.floor(Math.random() * count); \nvar fixtureid = body.eventsList[rand].id; \nvar fixturename = body.eventsList[rand].name; \n$.ctx.set('Kambi_fixtureid',fixtureid); \n$.ctx.set('Kambi_fixturename',fixturename);"
+          }
+        },
+        {
+          "id": "bylc",
+          "type": "http",
+          "name": "Pick random match from Premier League in Casumo",
+          "input": {
+            "method": "get",
+            "url": "http://football-bet-service-594212311.eu-central-1.elb.amazonaws.com/api/leagues/1000094985/matches"
+          },
+          "after": {
+            "script": "var body = output.body.get(); \nvar fixture = _.find(body, {id:$.ctx.get('Kambi_fixtureid')}); \nvar fixturename = fixture.name; console.log($.ctx.get('Kambi_fixturename')); console.log(fixture.name); \ntests['match Kambi and Casumo fixture names'] = _.isEqual($.ctx.get('Kambi_fixturename'), fixture.name);"
+          }
+        }
+      ]
+    },
+    "hklmc": {
+      "name": "Casumo/Kambi The Championship Match Count",
+      "steps": [
+        {
+          "id": "hkx9",
+          "type": "http",
+          "name": "Kambi Count - The Championship matches",
+          "input": {
+            "method": "get",
+            "url": "https://feeds.kambi.com/offering/api/v2/kambi/event/group/1000094981"
+          },
+          "after": {
+            "script": "var count = output.body.get().eventsList.length; \n//console.log(count); \n$.ctx.set('kambi_count',count); \n//console.log($.ctx.get('kambi_count'));"
+          }
+        },
+        {
+          "id": "bkgw",
+          "type": "http",
+          "name": "Casumo Count - The Championship matches",
+          "input": {
+            "method": "get",
+            "url": "http://football-bet-service-594212311.eu-central-1.elb.amazonaws.com/api/leagues/1000094981/matches"
+          },
+          "after": {
+            "script": "var count = output.body.get().length; \n//console.log(count); \ntests['compare Kambi and Casumo counts'] = _.isEqual($.ctx.get('kambi_count'),count);"
+          }
+        }
+      ]
+    },
+    "syxgt": {
+      "name": "Casumo/Kambi random match/bet offer/outcome for a match",
+      "steps": [
+        {
+          "id": "rjut",
+          "type": "http",
+          "name": "Pick random match",
+          "input": {
+            "method": "get",
+            "url": "https://feeds.kambi.com/offering/api/v2/kambi/event/group/1000094985"
+          },
+          "after": {
+            "script": "var body = output.body.get(); \nvar count = output.body.get().eventsList.length; \nvar rand = Math.floor(Math.random() * count); \nvar fixtureid = body.eventsList[rand].id; \nvar fixturename = body.eventsList[rand].name; \n$.ctx.set('Kambi_fixtureid',fixtureid); \n$.ctx.set('Kambi_fixturename',fixturename);"
+          }
+        },
+        {
+          "id": "hkfj",
+          "type": "http",
+          "name": "Pick random bet offer/outcome from match in kambi",
+          "input": {
+            "method": "get",
+            "url": "https://feeds.kambi.com/offering/api/v2/kambi/betoffer/event/{$.ctx.Kambi_fixtureid}"
+          },
+          "after": {
+            "script": "var body = output.body.get();\nvar count = output.body.get().betoffers.length;\nvar rand = Math.floor(Math.random() * count);\nvar count_outcome = output.body.get().betoffers[rand].outcomes.length;\nvar rand_outcome = Math.floor(Math.random() * count_outcome);\nvar betOfferid = body.betoffers[rand].id;\n//console.log(betOfferid);\nvar outcomeid = body.betoffers[rand].outcomes[rand_outcome].id;\nvar odds_Fractional = body.betoffers[rand].outcomes[rand_outcome].oddsFractional;\n//console.log(odds_Fractional);\n$.ctx.set('Kambi_betofferid',betOfferid);\n$.ctx.set('Kambi_outcomeid',outcomeid);\n$.ctx.set('Kambi_oddsFractional',odds_Fractional);\n\n\n\n"
+          }
+        },
+        {
+          "id": "bkc0",
+          "type": "http",
+          "name": "Find outcome/bet offer from match in casumo",
+          "input": {
+            "method": "get",
+            "url": "http://football-bet-service-594212311.eu-central-1.elb.amazonaws.com/api/v1/casumo/events/{$.ctx.Kambi_fixtureid}/betoffers"
+          },
+          "after": {
+            "script": "var body = output.body.get(); \nvar betoffers = _.find(body.betoffers, {id:$.ctx.get('Kambi_betofferid')}); \nvar outcome = _.find(betoffers.outcomes, {id:$.ctx.get('Kambi_outcomeid')});\nvar odds = outcome.oddsFractional;\ntests['match Kambi and Casumo outcome id'] = _.isEqual($.ctx.get('Kambi_outcomeid'), outcome.id);\ntests['match Kambi and Casumo outcome odds'] = _.isEqual($.ctx.get('Kambi_oddsFractional'), odds);\nconsole.log($.ctx.get('Kambi_fixturename'));\nconsole.log(betoffers.betOfferType.name);\nconsole.log(outcome.label);\nconsole.log($.ctx.get('Kambi_oddsFractional'));"
+          }
+        }
+      ]
+    },
+    "s1lgc": {
+      "name": "Casumo/Kambi random bet offer for a random match - not ready",
+      "steps": [
+        {
+          "id": "hkgq",
+          "type": "http",
+          "name": "kambi Random match id",
+          "input": {
+            "method": "get",
+            "url": "https://feeds.kambi.com/offering/api/v2/kambi/event/group/1000094985"
+          },
+          "after": {
+            "script": "var body = output.body.get(); \nvar count = output.body.get().eventsList.length; \nconsole.log(count); \nvar rand = Math.floor(Math.random() * count); \nvar fixtureid = body.eventsList[rand].id; \nvar fixturename = body.eventsList[rand].name; \n$.ctx.set('Kambi_fixtureid',fixtureid); \n$.ctx.set('Kambi_fixturename',fixturename);\nconsole.log(fixtureid); "
+          }
+        },
+        {
+          "id": "hywd",
+          "type": "http",
+          "name": "data for randome match",
+          "input": {
+            "method": "get",
+            "url": "https://feeds.kambi.com/offering/api/v2/kambi/event/group/{$.ctx.get('Kambi_betofferid')}"
+          },
+          "after": {}
+        }
+      ]
+    }
+  }
+}
